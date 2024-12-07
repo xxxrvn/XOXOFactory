@@ -152,7 +152,7 @@ vec4 hue_shift(vec4 a, float b){
 	hsv.x+=b;
 	return hsv2rgb(hsv);
 }
-//repeat functions
+
 float rep(float b,float r,int rept,float extra,float extra2){
 	if(rept==0)return b*r;
 	if (rept==1)return triwave(b*r);
@@ -217,7 +217,6 @@ void fragment() {
 		vec2 nod=vec2(dot(offset,norms[n]),dot(offset,vec2(-norms[n].y,norms[n].x)));
 		
 		if(n!=0)len+=length(positions[n]-positions[n-1]);
-		//finding nearest point in the right direction
 		if (d < distance && nod.y>0. ||n==0) {
 			endpoint=false;
 			distance = d;
@@ -244,14 +243,14 @@ void fragment() {
 		n += 1;
 	}
 	float fac=dot(uv-pos,norm);
-	if(!quad1){//round beginning
+	if(!quad1){
 		if(online<=0.){fac=length(vec2(abs(fac),online));}
-	}else{//quadratic beginning
+	}else{
 		if(online<=width){fac=max(abs(fac),width/2.-online);}
 	}
-	if(!quad2){//round ending
+	if(!quad2){
 		if(online>=len){fac=length(vec2(abs(fac),online-len));}
-	}else{//quadratic ending
+	}else{
 		if(online>=len-width){fac=max(abs(fac),online-len+width/2.);}
 	}
 	float fac1=abs(fac);

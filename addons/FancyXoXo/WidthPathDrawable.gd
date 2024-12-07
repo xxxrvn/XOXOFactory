@@ -110,3 +110,9 @@ func update_shader() -> void:
 		material.set_shader_parameter("outlinewidth",OutlineSize)
 		material.set_shader_parameter("width",width)
 		material.set_shader_parameter("alphaignore",alphaIgnore)
+
+
+func _ready():
+	if Engine.is_editor_hint():
+		polygon=PolyHandler.get_polygon_points(polygonQuality)
+		update_shader()

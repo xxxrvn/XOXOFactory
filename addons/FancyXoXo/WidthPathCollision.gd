@@ -39,3 +39,6 @@ func _process(delta):
 	
 func dynamic():
 		polygon=PolyHandler.get_polygon_points(polygonQuality)
+func _ready():
+	if Engine.is_editor_hint():
+		polygon=PolyHandler.get_polygon_points(polygonQuality)

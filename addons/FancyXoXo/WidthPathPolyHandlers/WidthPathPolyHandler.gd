@@ -10,9 +10,11 @@ func dynamic():
 func update_polygons():
 	pass
 	
+	
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		update_polygons()
+		
 
 func add_ending(norm,pos,rad) -> PackedVector2Array:
 	var points=8

@@ -11,4 +11,5 @@ static func gen_unique_string(length: int) -> String:
 
 
 func _enter_tree():
-	path=self.get_script().resource_path.get_base_dir() 
+	path=self.get_script().resource_path.get_base_dir()
+	
