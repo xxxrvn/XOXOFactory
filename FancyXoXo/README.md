@@ -1,3 +1,4 @@
+Add in the folder res://addons, and activate the plugin, then you can open test.tscn or test2.tscn, you have to click on the bool click to update first.
 This Plugin has a lot of functions, you can use the WidthPathDrawable to draw Bezier Curves and Spirals,
 and WidthPathCollision for Collisions of Bezier Curves and Spirals and Curve2Ds, dont forget to click on click to update, if you made any changes.
 You can also use Curve2Ds in WidthPathDrawables, but this look ugly but yolo.
