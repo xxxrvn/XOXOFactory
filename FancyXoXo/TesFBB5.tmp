@@ -1,0 +1,88 @@
+[gd_scene load_steps=12 format=3 uid="uid://rc7owpla7mgs"]
+
+[ext_resource type="Shader" path="res://addons/FancyXoXo/shaders/TestWP.gdshader" id="1_pxw7h"]
+[ext_resource type="Script" path="res://addons/FancyXoXo/CubicBezierPolygon2D.gd" id="1_ycl85"]
+[ext_resource type="Script" path="res://addons/FancyXoXo/WidthPathShaderHandler.gd" id="2_0lgfn"]
+[ext_resource type="Script" path="res://addons/FancyXoXo/CustomCombiEffects/EasyCCE.gd" id="3_emmth"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_2s6a7"]
+shader = ExtResource("1_pxw7h")
+shader_parameter/positions = PackedVector2Array(0, 0, 3.0297, 6.0296, 6.1176, 12.1168, 9.2619, 18.2592, 12.4608, 24.4544, 15.7125, 30.7, 19.0152, 36.9936, 22.3671, 43.3328, 25.7664, 49.7152, 29.2113, 56.1384, 32.7, 62.6, 36.2307, 69.0976, 39.8016, 75.6288, 43.4109, 82.1912, 47.0568, 88.7824, 50.7375, 95.4, 54.4512, 102.042, 58.1961, 108.705, 61.9704, 115.387, 65.7723, 122.086, 69.6, 128.8, 73.4517, 135.526, 77.3256, 142.261, 81.2199, 149.003, 85.1328, 155.75, 89.0625, 162.5, 93.0072, 169.25, 96.9651, 175.997, 100.934, 182.739, 104.913, 189.474, 108.9, 196.2, 112.893, 202.914, 116.89, 209.613, 120.889, 216.295, 124.889, 222.958, 128.887, 229.6, 132.883, 236.218, 136.874, 242.809, 140.858, 249.371, 144.834, 255.902, 148.8, 262.4, 152.754, 268.862, 156.694, 275.285, 160.618, 281.667, 164.525, 288.006, 168.413, 294.3, 172.279, 300.546, 176.123, 306.741, 179.942, 312.883, 183.735, 318.97, 187.5, 325, 191.235, 330.97, 194.938, 336.877, 198.607, 342.719, 202.241, 348.494, 205.837, 354.2, 209.395, 359.834, 212.912, 365.393, 216.386, 370.875, 219.816, 376.278, 223.2, 381.6, 226.536, 386.838, 229.822, 391.989, 233.056, 397.051, 236.237, 402.022, 239.362, 406.9, 242.431, 411.682, 245.441, 416.365, 248.39, 420.947, 251.277, 425.426, 254.1, 429.8, 256.857, 434.066, 259.546, 438.221, 262.165, 442.263, 264.713, 446.19, 267.188, 450, 269.587, 453.69, 271.91, 457.257, 274.154, 460.699, 276.318, 464.014, 278.4, 467.2, 280.398, 470.254, 282.31, 473.173, 284.134, 475.955, 285.869, 478.598, 287.513, 481.1, 289.063, 483.458, 290.519, 485.669, 291.878, 487.731, 293.139, 489.642, 294.3, 491.4, 295.359, 493.002, 296.314, 494.445, 297.163, 495.727, 297.905, 496.846, 298.538, 497.8, 299.059, 498.586, 299.468, 499.201, 299.762, 499.643, 299.94, 499.91, 300, 500)
+shader_parameter/norms = PackedVector2Array(0.894338, -0.447392, 0.89267, -0.450711, 0.890974, -0.454054, 0.889337, -0.457253, 0.887755, -0.460317, 0.886226, -0.463253, 0.884747, -0.466072, 0.883317, -0.468777, 0.881931, -0.471379, 0.880591, -0.473877, 0.879294, -0.47628, 0.878033, -0.478599, 0.876812, -0.480834, 0.875628, -0.482985, 0.874481, -0.48506, 0.873364, -0.487068, 0.872282, -0.489003, 0.871229, -0.490876, 0.870207, -0.492687, 0.869207, -0.494448, 0.868243, -0.496139, 0.867299, -0.497788, 0.866386, -0.499375, 0.865496, -0.500917, 0.864624, -0.502419, 0.863773, -0.503881, 0.862954, -0.505282, 0.862151, -0.506651, 0.861367, -0.507984, 0.8606, -0.509281, 0.859854, -0.510539, 0.859121, -0.511772, 0.858412, -0.512961, 0.857721, -0.514116, 0.857041, -0.515248, 0.856374, -0.516357, 0.85573, -0.517422, 0.855093, -0.518474, 0.854478, -0.519488, 0.853872, -0.520483, 0.853278, -0.521457, 0.852697, -0.522406, 0.852134, -0.523324, 0.851578, -0.524229, 0.85103, -0.525117, 0.850504, -0.525969, 0.849974, -0.526824, 0.84947, -0.527636, 0.848974, -0.528435, 0.848477, -0.529232, 0.847989, -0.530014, 0.847517, -0.530768, 0.847058, -0.531501, 0.8466, -0.53223, 0.846156, -0.532935, 0.845717, -0.533632, 0.845287, -0.534313, 0.844876, -0.534962, 0.844451, -0.535633, 0.844049, -0.536266, 0.843644, -0.536902, 0.843261, -0.537504, 0.842879, -0.538104, 0.842512, -0.538677, 0.842135, -0.539267, 0.841771, -0.539835, 0.841419, -0.540383, 0.841047, -0.540962, 0.840708, -0.541489, 0.84036, -0.542029, 0.840035, -0.542532, 0.839703, -0.543046, 0.839379, -0.543547, 0.83906, -0.544038, 0.838747, -0.544521, 0.83844, -0.544994, 0.838142, -0.545452, 0.837823, -0.545942, 0.837531, -0.54639, 0.837249, -0.546821, 0.836973, -0.547244, 0.836671, -0.547706, 0.836397, -0.548123, 0.836122, -0.548543, 0.835882, -0.54891, 0.835577, -0.549374, 0.835374, -0.549682, 0.835074, -0.550138, 0.83485, -0.550477, 0.834572, -0.550898, 0.834374, -0.551198, 0.834102, -0.55161, 0.833827, -0.552026, 0.833611, -0.552352, 0.83335, -0.552746, 0.833105, -0.553114, 0.832886, -0.553444, 0.832788, -0.553592, 0.832435, -0.554122, 0.832487, -0.554044, 0.83205, -0.5547)
+shader_parameter/time = 344.729
+shader_parameter/width = 20.0
+shader_parameter/color1 = Color(0.4, 0.2, 0.6, 1)
+shader_parameter/color2 = Color(0.545098, 0, 0.545098, 1)
+shader_parameter/color3 = Color(0.498039, 1, 0.831373, 1)
+shader_parameter/color4 = Color(0, 0.392157, 0, 1)
+shader_parameter/outlinecolor = Color(0, 0, 0, 1)
+shader_parameter/outlinewidth = 2.0
+shader_parameter/wf1 = 1.0
+shader_parameter/quad1 = false
+shader_parameter/quad2 = false
+shader_parameter/CUF1 = null
+shader_parameter/CUF2 = null
+shader_parameter/CUF3 = null
+shader_parameter/CUF4 = null
+shader_parameter/wf2 = 1.0
+shader_parameter/grad1b = false
+shader_parameter/grad2b = false
+shader_parameter/grad3b = false
+shader_parameter/lenadjust = 0.0
+shader_parameter/combmode1 = null
+shader_parameter/combmode2 = null
+shader_parameter/combmode3 = null
+shader_parameter/alphaignore = false
+
+[sub_resource type="Gradient" id="Gradient_ovtcl"]
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_niu4n"]
+gradient = SubResource("Gradient_ovtcl")
+
+[sub_resource type="Resource" id="Resource_sse5y"]
+script = ExtResource("3_emmth")
+HSV = false
+mode = "Normal"
+CreateCustom = false
+
+[sub_resource type="Resource" id="Resource_f5dfu"]
+script = ExtResource("3_emmth")
+HSV = false
+mode = "Normal"
+CreateCustom = false
+
+[sub_resource type="Resource" id="Resource_sxwri"]
+script = ExtResource("3_emmth")
+HSV = false
+mode = "Normal"
+CreateCustom = false
+
+[sub_resource type="Resource" id="Resource_stfh6"]
+script = ExtResource("2_0lgfn")
+ClickToUpdate = false
+shaderid = "TestWP"
+DeleteShaderFile = false
+shaderQuality = 100
+CustomInterEffects1 = Array[Resource("res://addons/FancyXoXo/CustomInterEffects/CustomInterEffect.gd")]([])
+CustomCombiEffects1 = Array[Resource("res://addons/FancyXoXo/CustomCombiEffects/CustomCombiEffect.gd")]([SubResource("Resource_sse5y")])
+CustomAfterEffects1 = Array[Resource("res://addons/FancyXoXo/CustomAfterEffects/CustomAfterEffect.gd")]([])
+CustomInterEffects2 = Array[Resource("res://addons/FancyXoXo/CustomInterEffects/CustomInterEffect.gd")]([])
+CustomCombiEffects2 = Array[Resource("res://addons/FancyXoXo/CustomCombiEffects/CustomCombiEffect.gd")]([SubResource("Resource_f5dfu")])
+CustomAfterEffects2 = Array[Resource("res://addons/FancyXoXo/CustomAfterEffects/CustomAfterEffect.gd")]([])
+CustomInterEffects3 = Array[Resource("res://addons/FancyXoXo/CustomInterEffects/CustomInterEffect.gd")]([])
+CustomCombiEffects3 = Array[Resource("res://addons/FancyXoXo/CustomCombiEffects/CustomCombiEffect.gd")]([SubResource("Resource_sxwri")])
+CustomAfterEffects3 = Array[Resource("res://addons/FancyXoXo/CustomAfterEffects/CustomAfterEffect.gd")]([])
+
+[node name="Test" type="Node2D"]
+
+[node name="CubicBezierPolygon2D" type="Polygon2D" parent="."]
+material = SubResource("ShaderMaterial_2s6a7")
+texture = SubResource("GradientTexture2D_niu4n")
+polygon = PackedVector2Array(-9.29927, 3.67743, -9.99984, 0.0569841, -9.34058, -3.57121, -7.41115, -6.71378, -4.47392, -8.94338, -0.92831, -9.95682, 2.74354, -9.61629, 6.04231, -7.96809, 8.51942, -5.23636, 8.94338, -4.47392, 18.5502, 14.4543, 28.6925, 33.9066, 39.3155, 53.8092, 50.3637, 74.0871, 61.7817, 94.6655, 73.5139, 115.47, 85.5052, 136.427, 97.7002, 157.461, 110.044, 178.5, 122.481, 199.469, 134.956, 220.295, 147.415, 240.904, 159.802, 261.222, 172.061, 281.177, 184.139, 300.694, 195.98, 319.7, 207.529, 338.122, 218.73, 355.886, 229.53, 372.919, 239.872, 389.147, 249.703, 404.498, 258.966, 418.898, 267.607, 432.273, 275.572, 444.55, 282.804, 455.656, 289.25, 465.518, 294.853, 474.062, 299.561, 481.216, 303.316, 486.905, 306.064, 491.056, 307.751, 493.597, 308.32, 494.453, 308.772, 495.199, 309.916, 498.705, 309.711, 502.387, 308.186, 505.744, 305.547, 508.32, 302.154, 509.765, 298.468, 509.882, 294.991, 508.655, 292.195, 506.251, 291.68, 505.547, 291.096, 504.67, 289.395, 502.108, 286.632, 497.934, 282.861, 492.222, 278.139, 485.045, 272.518, 476.474, 266.055, 466.585, 258.803, 455.45, 250.819, 443.142, 242.157, 429.735, 232.872, 415.302, 223.018, 399.915, 212.652, 383.648, 201.826, 366.575, 190.598, 348.768, 179.02, 330.3, 167.149, 311.245, 155.038, 291.675, 142.743, 271.663, 130.319, 251.284, 117.821, 230.608, 105.302, 209.711, 92.8186, 188.663, 80.4248, 167.539, 68.1752, 146.41, 56.1248, 125.35, 44.3279, 104.431, 32.8394, 83.7254, 21.7135, 63.305, 11.0048, 43.2418, 0.767454, 23.6072, -8.94338, 4.47392)
+script = ExtResource("1_ycl85")
+ShaderHandler = SubResource("Resource_stfh6")
+inner1 = Color(0.4, 0.2, 0.6, 1)
+outer1 = Color(0.545098, 0, 0.545098, 1)
+inner2 = Color(0.498039, 1, 0.831373, 1)
+outer2 = Color(0, 0.392157, 0, 1)
+OutlineSize = 2.0
