@@ -1,0 +1,467 @@
+[gd_scene load_steps=21 format=3 uid="uid://rc7owpla7mgs"]
+
+[ext_resource type="Script" path="res://addons/FancyXoXo/Test.gd" id="1_67fru"]
+[ext_resource type="Script" path="res://addons/FancyXoXo/WidthPathShaderHandler.gd" id="2_0lgfn"]
+[ext_resource type="Script" path="res://addons/FancyXoXo/WidthPathDrawable.gd" id="2_f3cgx"]
+[ext_resource type="Script" path="res://addons/FancyXoXo/CustomCombiEffects/EasyCCE.gd" id="3_emmth"]
+[ext_resource type="Script" path="res://addons/FancyXoXo/WidthPathPolyHandlers/FactorPoint.gd" id="8_kn80v"]
+[ext_resource type="Script" path="res://addons/FancyXoXo/WidthPathPolyHandlers/PolyFactorBezierHandler.gd" id="9_cqkuq"]
+
+[sub_resource type="Shader" id="Shader_0ycfa"]
+code = "shader_type canvas_item;
+ uniform vec2 positions[101];
+ uniform vec2 norms[101];
+uniform float time;
+uniform float width;
+uniform vec4 color1 : source_color;
+uniform vec4 color2 : source_color;
+uniform vec4 color3 : source_color;
+uniform vec4 color4 : source_color;
+uniform vec4 outlinecolor : source_color;
+uniform float outlinewidth;
+
+uniform float wf1;
+uniform bool quad1;
+uniform bool quad2;
+
+
+uniform float CUF1;
+uniform float CUF2;
+uniform float CUF3;
+uniform float CUF4;
+
+uniform vec4 CUC1 : source_color;
+uniform vec4 CUC2 : source_color;
+uniform vec4 CUC3 : source_color;
+uniform vec4 CUC4 : source_color;
+
+uniform float wf2;
+
+
+uniform bool grad1b;
+uniform bool grad2b;
+uniform bool grad3b;
+uniform float lenadjust;
+uniform int combmode1;
+uniform int combmode2;
+uniform int combmode3;
+uniform bool alphaignore;
+
+vec4 rgb2hsv(vec4 c)
+{
+	vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+	vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
+	vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
+
+	float d = q.x - min(q.w, q.y);
+	float e = 1.0e-10;
+	return vec4(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x,c.w);
+}
+vec4 maxv(vec4 a,vec4 b){
+	return vec4(max(a.x,b.x),max(a.y,b.y),max(a.z,b.z),max(a.w,b.w));
+}
+vec4 minv(vec4 a,vec4 b){
+	return vec4(min(a.x,b.x),min(a.y,b.y),min(a.z,b.z),min(a.w,b.w));
+}
+vec4 maxn(vec4 a,vec4 b){
+	if(length(a)>length(b))return a;
+	return b;
+}
+vec4 powv(vec4 a,float b){
+	return vec4(pow(a.x,b),pow(a.y,b),pow(a.z,b),pow(a.w,b));
+}
+vec4 minn(vec4 a,vec4 b){
+	if(length(a)>length(b))return b;
+	return a;
+}
+float triwave(float a){
+	return 2.*abs(a-floor(a+0.5));
+}
+float circwave(float a){
+	return (-sign(mod(a,4.)-2.))*pow(1.-pow(mod(a,2.)-1.,2.),0.5)/2.+0.5;
+}
+float squircwave(float a,float b){
+	return (-sign(mod(abs(a),4.)-2.))*pow(1.-pow(mod(abs(a),2.)-1.,b),1./b)/2.+0.5;
+}
+float squircbounce(float a,float b){
+	return abs(pow(1.-pow(mod(abs(a),2.)-1.,b),1./b));
+}
+float bouncewave(float a){
+	return abs(pow(1.-pow(mod(a,2.)-1.,2.),0.5));
+}
+float sinbounce(float a){
+	return abs(sin(a*PI*2.));
+}
+float quadwave(float a){
+	if(int(a)%2==0)return 0.;
+	return 1.;
+}
+float parasaw(float a, float b,float c){
+	return pow(mod(pow(mod(a,1.),b)*sign(mod(a,2.)-1.),1.),c);
+}
+vec4 binClamp(vec4 a, int flags,float mins,float maxs){
+	vec4 c=a;
+	if((flags&1)!=0){
+		c.x=clamp(a.x,mins,maxs);
+	}
+	if((flags&2)!=0){
+		c.y=clamp(a.y,mins,maxs);
+	}
+	if((flags&4)!=0){
+		c.z=clamp(a.z,mins,maxs);
+	}
+	if((flags&8)!=0){
+		c.w=clamp(a.w,mins,maxs);
+	}
+	return c;
+}
+vec4 binMod(vec4 a, int flags,float mods){
+	vec4 c=a;
+	if((flags&1)!=0){
+		c.x=mod(a.x,mods);
+	}
+	if((flags&2)!=0){
+		c.y=mod(a.y,mods);
+	}
+	if((flags&4)!=0){
+		c.z=mod(a.z,mods);
+	}
+	if((flags&8)!=0){
+		c.w=mod(a.w,mods);
+	}
+	return c;
+}
+float muffin(float factor,float dist){
+	return max(abs(1.-dist/factor),0.)*factor;
+}
+
+float smoother(float a,int b){
+	int ix=0;
+	while(ix<=b){
+	a = 1. / (1. + a);
+	a = (a - 0.5) / (1.0 - 0.5);
+	a=1.-a;
+	ix++;
+	}
+	return a;
+}
+vec2 rotn(vec2 dis, vec2 dir) {
+	return vec2(
+		dir.x * dis.x - dir.y * dis.y,
+		dir.y * dis.x + dir.x * dis.y 
+	);
+}
+vec4 hsv2rgb(vec4 c)
+{
+	vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+	vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+	return vec4(c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y),c.w);
+}
+vec4 hue_shift(vec4 a, float b){
+	vec4 hsv=rgb2hsv(a);
+	hsv.x+=b;
+	return hsv2rgb(hsv);
+}
+
+float rep(float b,float r,int rept,float extra,float extra2){
+	if(rept==0)return b*r;
+	if (rept==1)return triwave(b*r);
+	if (rept==2)return sin(b*r*PI*2.)/2.+0.5;
+	if (rept==3)return circwave(b*r*2.);
+	if (rept==4)return quadwave(b*r*2.);
+	if (rept==5)return mod(b*r,1.);
+	if (rept==6)return bouncewave(b*r*2.);
+	if (rept==7)return sinbounce(b*r);
+	if (rept==8)return squircwave(b*r,extra);
+	if (rept==9)return squircbounce(b*r,extra);
+	if (rept==10)return parasaw(b*r,extra,extra2);
+	
+	
+	
+	return b;
+}
+float pochhammer(float a,int b){
+	int n=0;
+	float c=a;
+	while(n>=b){
+		c=pow(c,a);
+	}
+	return c;
+}
+float steps(float a,float b){
+	return floor(a/b)*b;
+}
+void fragment() {
+	float CRF1=0.;
+	float CRF2=0.;
+	float CRF3=0.;
+	float CRF4=0.;
+	float IRF1=0.;
+	float IRF2=0.;
+	float IRF3=0.;
+	float IRF4=0.;
+	vec4 CRC1=vec4(0);
+	vec4 CRC2=vec4(0);
+	vec4 CRC3=vec4(0);
+	vec4 CRC4=vec4(0);
+	vec4 IRC1=vec4(0);
+	vec4 IRC2=vec4(0);
+	vec4 IRC3=vec4(0);
+	vec4 IRC4=vec4(0);
+	float online=0.;
+	float distance =  1e10; // Start with a very large distance
+	float len=0.;
+	vec2 rot=vec2(0);
+	int n = 0;
+	vec2 pos=vec2(0);
+	vec2 norm=vec2(0);
+	vec2 onorm=vec2(0);
+	bool endpoint=false;
+	bool isquad=false;
+	vec2 uv=UV/TEXTURE_PIXEL_SIZE;
+	int nu=0;
+	endpoint=false;
+	while (n <= 101-1) {
+		vec2 offset=uv-positions[n];
+		float d = length(offset);
+		vec2 nod=vec2(dot(offset,norms[n]),dot(offset,vec2(-norms[n].y,norms[n].x)));
+		
+		if(n!=0)len+=length(positions[n]-positions[n-1]);
+		if (d < distance && nod.y>0. ||n==0) {
+			endpoint=false;
+			distance = d;
+			pos=positions[n];
+			norm=norms[n];
+			onorm=vec2(-norms[n].y,norms[n].x);
+			nu=n;
+			if(n==101-1){
+				float d1=length(positions[101-1]-positions[101-2]);
+				float d2=length(uv-positions[101-2]);
+				if(d2>d1)endpoint=true;
+				if(quad2){endpoint=false;}
+				}
+			if(n==0){
+				float d1=length(positions[0]-positions[1]);
+				float d2=length(uv-positions[1]);
+				if(d2/2.>d1)endpoint=true;
+				if(quad1){endpoint=false;}
+				}
+			online=len+(dot(offset,onorm));
+			
+		}
+		
+		n += 1;
+	}
+	float fac=dot(uv-pos,norm);
+	if(!quad1){
+		if(online<=0.){fac=length(vec2(abs(fac),online));}
+	}else{
+		if(online<=width){fac=max(abs(fac),width/2.-online);}
+	}
+	if(!quad2){
+		if(online>=len){fac=length(vec2(abs(fac),online-len));}
+	}else{
+		if(online>=len-width){fac=max(abs(fac),online-len+width/2.);}
+	}
+	float fac1=abs(fac);
+	float fac2=abs(fac);
+	
+	/**/
+	if(grad1b){fac1=pow(1.+2./(wf1*width),fac1)/2.;}
+	else fac1=fac1/(wf1*width)*2.;
+	float onlineO=online;
+	fac1=max(fac1,0.);
+	fac1=min(fac1,1.);
+	
+	
+		
+		
+	if(grad2b){fac2=pow(1.+2./(wf2*width),fac2)/2.;}
+	else fac2=fac2/(wf2*width)*2.;
+	
+	fac2=max(fac2,0.);
+	fac2=min(fac2,1.);
+	
+
+	
+	
+	if(grad3b)
+	online=pow(1.+1./len,online);
+	else online/=len;
+	
+	online*=pow(float(nu+4)/float(101+4),lenadjust);
+
+		
+	vec4 color1x=color1;
+	vec4 color2x=color2;
+	vec4 color3x=color3;
+	vec4 color4x=color4;
+	vec4 colora=color1;
+	
+	
+
+
+
+	IRC1=color1x;
+	IRC2=color2x;
+	colora=mix(IRC1,IRC2,fac1);
+
+
+
+
+
+vec4 colorb=color3;
+	
+	
+
+
+
+	IRC1=color3x;
+	IRC2=color4x;
+	colorb=mix(IRC1,IRC2,fac2);
+
+
+
+
+
+vec4 color=colora;
+
+
+
+
+
+	IRC1=colora;
+	IRC2=colorb;
+	color=mix(IRC1,IRC2,online);
+
+
+
+
+		
+	if(alphaignore)color.w=1.;
+	
+	if(abs(fac)>=width/2.-outlinewidth*2.){color=outlinecolor;}
+
+	COLOR = color;
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ip405"]
+shader = SubResource("Shader_0ycfa")
+shader_parameter/positions = PackedVector2Array(0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 23, 24, 24, 25, 25, 26, 26, 27, 27, 28, 28, 29, 29, 30, 30, 31, 31, 32, 32, 33, 33, 34, 34, 35, 35, 36, 36, 37, 37, 38, 38, 39, 39, 40, 40, 41, 41, 42, 42, 43, 43, 44, 44, 45, 45, 46, 46, 47, 47, 48, 48, 49, 49, 50, 50, 51, 51, 52, 52, 53, 53, 54, 54, 55, 55, 56, 56, 57, 57, 58, 58, 59, 59, 60, 60, 61, 61, 62, 62, 63, 63, 64, 64, 65, 65, 66, 66, 67, 67, 68, 68, 69, 69, 70, 70, 71, 71, 72, 72, 73, 73, 74, 74, 75, 75, 76, 76, 77, 77, 78, 78, 79, 79, 80, 80, 81, 81, 82, 82, 83, 83, 84, 84, 85, 85, 86, 86, 87, 87, 88, 88, 89, 89, 90, 90, 91, 91, 92, 92, 93, 93, 94, 94, 95, 95, 96, 96, 97, 97, 98, 98, 99, 99, 100, 100)
+shader_parameter/norms = PackedVector2Array(0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107, 0.707107, -0.707107)
+shader_parameter/time = 180.106
+shader_parameter/width = 20.0
+shader_parameter/color1 = Color(0.4, 0.2, 0.6, 1)
+shader_parameter/color2 = Color(0.545098, 0, 0.545098, 1)
+shader_parameter/color3 = Color(0.498039, 1, 0.831373, 1)
+shader_parameter/color4 = Color(0, 0.392157, 0, 1)
+shader_parameter/outlinecolor = Color(0, 0, 0, 1)
+shader_parameter/outlinewidth = 2.0
+shader_parameter/wf1 = 1.0
+shader_parameter/quad1 = false
+shader_parameter/quad2 = false
+shader_parameter/CUF1 = null
+shader_parameter/CUF2 = null
+shader_parameter/CUF3 = null
+shader_parameter/CUF4 = null
+shader_parameter/CUC1 = null
+shader_parameter/CUC2 = null
+shader_parameter/CUC3 = null
+shader_parameter/CUC4 = null
+shader_parameter/wf2 = 1.0
+shader_parameter/grad1b = false
+shader_parameter/grad2b = false
+shader_parameter/grad3b = false
+shader_parameter/lenadjust = 0.0
+shader_parameter/combmode1 = null
+shader_parameter/combmode2 = null
+shader_parameter/combmode3 = null
+shader_parameter/alphaignore = false
+
+[sub_resource type="Gradient" id="Gradient_kyp8h"]
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_s7vqk"]
+gradient = SubResource("Gradient_kyp8h")
+
+[sub_resource type="Resource" id="Resource_wafln"]
+script = ExtResource("8_kn80v")
+p = Vector2(100, 100)
+f = 1.0
+
+[sub_resource type="Resource" id="Resource_jxwkk"]
+script = ExtResource("8_kn80v")
+p = Vector2(150, 150)
+f = 1.0
+
+[sub_resource type="Resource" id="Resource_p5iyy"]
+script = ExtResource("8_kn80v")
+p = Vector2(200, 250)
+f = 1.0
+
+[sub_resource type="Resource" id="Resource_g04u1"]
+script = ExtResource("8_kn80v")
+p = Vector2(150, 300)
+f = 1.0
+
+[sub_resource type="Resource" id="Resource_81qrw"]
+script = ExtResource("8_kn80v")
+p = Vector2(180, 180)
+f = 1.0
+
+[sub_resource type="Resource" id="Resource_g6o6w"]
+script = ExtResource("9_cqkuq")
+Points = Array[ExtResource("8_kn80v")]([SubResource("Resource_wafln"), SubResource("Resource_jxwkk"), SubResource("Resource_p5iyy"), SubResource("Resource_g04u1"), SubResource("Resource_81qrw")])
+startpoint_is_circle = true
+endpoint_is_circle = true
+width = 20.0
+
+[sub_resource type="Resource" id="Resource_hldsy"]
+script = ExtResource("3_emmth")
+HSV = false
+mode = "Normal"
+CreateCustom = false
+
+[sub_resource type="Resource" id="Resource_4wnyg"]
+script = ExtResource("3_emmth")
+HSV = false
+mode = "Normal"
+CreateCustom = false
+
+[sub_resource type="Resource" id="Resource_eklyd"]
+script = ExtResource("3_emmth")
+HSV = false
+mode = "Normal"
+CreateCustom = false
+
+[sub_resource type="Resource" id="Resource_g5yct"]
+script = ExtResource("2_0lgfn")
+ClickToUpdate = false
+shaderid = "TestWP"
+DeleteShaderFile = false
+shaderQuality = 100
+CustomInterEffects1 = Array[Resource("res://addons/FancyXoXo/CustomInterEffects/CustomInterEffect.gd")]([])
+CustomCombiEffects1 = Array[Resource("res://addons/FancyXoXo/CustomCombiEffects/CustomCombiEffect.gd")]([SubResource("Resource_hldsy")])
+CustomAfterEffects1 = Array[Resource("res://addons/FancyXoXo/CustomAfterEffects/CustomAfterEffect.gd")]([])
+CustomInterEffects2 = Array[Resource("res://addons/FancyXoXo/CustomInterEffects/CustomInterEffect.gd")]([])
+CustomCombiEffects2 = Array[Resource("res://addons/FancyXoXo/CustomCombiEffects/CustomCombiEffect.gd")]([SubResource("Resource_4wnyg")])
+CustomAfterEffects2 = Array[Resource("res://addons/FancyXoXo/CustomAfterEffects/CustomAfterEffect.gd")]([])
+CustomInterEffects3 = Array[Resource("res://addons/FancyXoXo/CustomInterEffects/CustomInterEffect.gd")]([])
+CustomCombiEffects3 = Array[Resource("res://addons/FancyXoXo/CustomCombiEffects/CustomCombiEffect.gd")]([SubResource("Resource_eklyd")])
+CustomAfterEffects3 = Array[Resource("res://addons/FancyXoXo/CustomAfterEffects/CustomAfterEffect.gd")]([])
+
+[node name="Test" type="Node2D"]
+script = ExtResource("1_67fru")
+
+[node name="WidthPathDrawable" type="Polygon2D" parent="."]
+material = SubResource("ShaderMaterial_ip405")
+texture = SubResource("GradientTexture2D_s7vqk")
+polygon = PackedVector2Array(-7.66044, 6.42788, -9.4693, 3.21439, -9.99048, -0.436194, -9.15311, -4.02747, -7.07107, -7.07107, -4.02747, -9.15311, -0.436194, -9.99048, 3.21439, -9.4693, 6.42788, -7.66044, 7.07107, -7.07107, 10.1961, -3.94607, 13.3211, -0.821068, 16.4461, 2.30393, 19.5711, 5.42893, 22.6961, 8.55393, 25.8211, 11.6789, 28.9461, 14.8039, 32.0711, 17.9289, 35.1961, 21.0539, 38.3211, 24.1789, 41.4461, 27.3039, 44.5711, 30.4289, 47.6961, 33.5539, 50.8211, 36.6789, 53.9461, 39.8039, 57.0711, 42.9289, 60.1961, 46.0539, 63.3211, 49.1789, 66.4461, 52.3039, 69.5711, 55.4289, 72.6961, 58.5539, 75.8211, 61.6789, 78.9461, 64.8039, 82.0711, 67.9289, 85.1961, 71.0539, 88.3211, 74.1789, 91.4461, 77.3039, 94.5711, 80.4289, 97.6961, 83.5539, 100.821, 86.6789, 103.946, 89.8039, 107.071, 92.9289, 107.66, 93.5721, 109.469, 96.7856, 109.99, 100.436, 109.153, 104.027, 107.071, 107.071, 104.027, 109.153, 100.436, 109.99, 96.7856, 109.469, 93.5721, 107.66, 92.9289, 107.071, 89.8039, 103.946, 86.6789, 100.821, 83.5539, 97.6961, 80.4289, 94.5711, 77.3039, 91.4461, 74.1789, 88.3211, 71.0539, 85.1961, 67.9289, 82.0711, 64.8039, 78.9461, 61.6789, 75.8211, 58.5539, 72.6961, 55.4289, 69.5711, 52.3039, 66.4461, 49.1789, 63.3211, 46.0539, 60.1961, 42.9289, 57.0711, 39.8039, 53.9461, 36.6789, 50.8211, 33.5539, 47.6961, 30.4289, 44.5711, 27.3039, 41.4461, 24.1789, 38.3211, 21.0539, 35.1961, 17.9289, 32.0711, 14.8039, 28.9461, 11.6789, 25.8211, 8.55393, 22.6961, 5.42893, 19.5711, 2.30393, 16.4461, -0.821068, 13.3211, -3.94607, 10.1961, -7.07107, 7.07107)
+script = ExtResource("2_f3cgx")
+PolyHandler = SubResource("Resource_g6o6w")
+ShaderHandler = SubResource("Resource_g5yct")
+inner1 = Color(0.4, 0.2, 0.6, 1)
+outer1 = Color(0.545098, 0, 0.545098, 1)
+inner2 = Color(0.498039, 1, 0.831373, 1)
+outer2 = Color(0, 0.392157, 0, 1)
+OutlineSize = 2.0
